@@ -4,17 +4,6 @@ const isReduxType = str => /^[A-Z\*]+([_\*][A-Z\*]+)*?$/.test(str)
 const isPlainObject =
   o => ( o !== null && ! Array.isArray(o) && typeof o !== 'function' && typeof o === 'object' )
 
-
-const hasWildcard = (pattern) => (
-  typeof pattern === 'string'
-    ? pattern.includes('*')
-    : Array.isArray(pattern)
-      ? pattern.some(x => x.includes('*') )
-      : isPlainObject(pattern)
-        ? hasWildcard(Object.keys(pattern))
-        : false
-)
-
 /*
   Give a best effort to make the type formatting as reliable as possible.
   We start by splitting the string into upper case and lowercase elements.
@@ -34,7 +23,6 @@ const hasWildcard = (pattern) => (
   systemRX -> 'SYSTEM_RX'
 */
 function formatType (type) {
-  let wildcardType = hasWildcard(type)
   if ( isReduxType(type) ) { return type }
   let buffer = '',
       list = type
@@ -47,13 +35,14 @@ function formatType (type) {
                 }, []
               )
   if ( list.length === 1 ) { return type.toUpperCase() }
-  let wasCapital = false
+  let wasCapital = false, wasWildcard = false
   for ( let e of list ) {
     if ( ! e.length  ) { continue }
     const isCapital = /[A-Z]/.test(e)
+    const isWildcard = e.includes('*')
     e = e.toUpperCase()
     if ( isReduxType(e) ) {
-      if ( buffer === '' ) {
+      if ( buffer === '' || isWildcard || wasWildcard ) {
         buffer += e
       } else {
         if ( isCapital && ! wasCapital ) {
@@ -70,14 +59,23 @@ function formatType (type) {
           } else { buffer += '_' + e }
         } else { buffer += '_' + e }
       }
-    } else if ( e.includes('*') ) {
-      buffer += e
-    }
-    wasCapital = isCapital
+    } else if ( isWildcard ) { buffer += e }
+    wasCapital = isCapital ; wasWildcard = isWildcard
   }
-  if ( isReduxType(buffer) ) {
-    return buffer
+  if ( isReduxType(buffer) ) { return buffer }
+}
+
+const formatValue = value => {
+  if ( typeof value === 'string' ) {
+    return formatType(value)
+  } else if ( Array.isArray(value) ) {
+    return value.map(e => formatValue(e))
+  } else if ( typeof value === 'object' ) {
+    return Object.keys(value).reduce((p, c) => {
+      p[formatType(c)] = value[c]
+      return p
+    }, {}) 
   }
 }
 
-export default formatType
+export default formatValue
