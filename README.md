@@ -30,8 +30,8 @@ const post2 = ToReduxType(pre2) ;
 
 // array
 
-const pre3 = [ 'myValue', 'ANOTHER_VALUE', '@noCONVERT' ]
+const pre3 = [ 'myValue', 'ANOTHER_VALUE', '@@@noCONVERT' ]
 
-const post3 = ToReduxType(pre3) ; // [ 'MY_VALUE', 'ANOTHER_VALUE', 'noCONVERT' ]
+const post3 = ToReduxType(pre3) ; // [ 'MY_VALUE', 'ANOTHER_VALUE', '@@noCONVERT' ]
 
 ```
