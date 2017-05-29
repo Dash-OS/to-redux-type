@@ -1,5 +1,5 @@
 // Allow for wildcard in the types
-const isReduxType = str => /^[A-Z\*]+([_\*][A-Z\*]+)*?$/.test(str)
+const isReduxType = str => /^[A-Z0-9\*]+([_\*][A-Z0-9\*]+)*?$/.test(str)
 
 const isPlainObject =
   o => ( o !== null && ! Array.isArray(o) && typeof o !== 'function' && typeof o === 'object' )
@@ -26,7 +26,7 @@ function formatType (type) {
   if ( isReduxType(type) ) { return type }
   let buffer = '',
       list = type
-              .split(/([A-Z]+|[a-z]+)/)
+              .split(/([A-Z]+|[a-z]+|[0-9]+)/)
               .reduce(
                 (a, c) => {
                   if ( c === '' ) { return a }
@@ -59,7 +59,9 @@ function formatType (type) {
           } else { buffer += '_' + e }
         } else { buffer += '_' + e }
       }
-    } else if ( isWildcard ) { buffer += e }
+    } else if ( isWildcard ) { buffer += e } else {
+      console.log('None: ', e)
+    }
     wasCapital = isCapital ; wasWildcard = isWildcard
   }
   if ( isReduxType(buffer) ) { return buffer }
@@ -75,10 +77,12 @@ const formatValue = value => {
     )
   } else if ( typeof value === 'object' ) {
     return Object.keys(value).reduce((p, c) => {
-      if ( c.startsWith('@') ) {
-        p[c.slice(1)] = value[c]
-      } else {
-        p[formatType(c)] = value[c]
+      if ( typeof c === 'string' ) {
+        if ( c.startsWith('@') ) {
+          p[c.slice(1)] = value[c]
+        } else {
+          p[formatType(c)] = value[c]
+        }
       }
       return p
     }, {}) 
