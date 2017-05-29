@@ -1,6 +1,6 @@
 {
   "name": "to-redux-type",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Converts strings, objects, and arrays to redux action types (screaming snake case) (myValue -> MY_VALUE)",
   "main": "dist/to-redux-type.js",
   "module": "src/main.js",
