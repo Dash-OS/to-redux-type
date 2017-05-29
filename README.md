@@ -3,8 +3,8 @@
 Converts camelCase to SCREAMING_SNAKE_CASE with special considerations for wildcard 
 (*) and handling of short strings (systemRX vs systemRx --> SYSTEM_RX)
 
-> By design, for arrays and objects, values that start with ! are not converted and 
-> instead are returned without the ! included. This is not escapeable at this time. 
+> By design, for arrays and objects, values that start with @ are not converted and 
+> instead are returned without the @ included. This is not escapeable at this time. 
 
 ### Simple Example
 
@@ -22,7 +22,7 @@ const post = ToReduxType(pre) ; // MY_VALUE
 const pre2 = {
   myValue: 'my value!',
   'SYSTEM_*': 'system wildcard',
-  '!noCONVERT': 'no conversion'
+  '@noCONVERT': 'no conversion'
 }
 
 const post2 = ToReduxType(pre2) ; 
@@ -30,7 +30,7 @@ const post2 = ToReduxType(pre2) ;
 
 // array
 
-const pre3 = [ 'myValue', 'ANOTHER_VALUE', '!noCONVERT' ]
+const pre3 = [ 'myValue', 'ANOTHER_VALUE', '@noCONVERT' ]
 
 const post3 = ToReduxType(pre3) ; // [ 'MY_VALUE', 'ANOTHER_VALUE', 'noCONVERT' ]
 

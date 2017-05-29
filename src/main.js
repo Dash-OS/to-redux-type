@@ -69,13 +69,13 @@ const formatValue = value => {
   if ( typeof value === 'string' ) {
     return formatType(value)
   } else if ( Array.isArray(value) ) {
-    return value.map(e => e.startsWith('!')
+    return value.map(e => e.startsWith('@')
       ? e.slice(1)
       : formatValue(e)
     )
   } else if ( typeof value === 'object' ) {
     return Object.keys(value).reduce((p, c) => {
-      if ( c.startsWith('!') ) {
+      if ( c.startsWith('@') ) {
         p[c.slice(1)] = value[c]
       } else {
         p[formatType(c)] = value[c]
