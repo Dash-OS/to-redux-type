@@ -1,6 +1,6 @@
 {
   "name": "to-redux-type",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "Converts strings, objects, and arrays to redux action types (screaming snake case) (myValue -> MY_VALUE)",
   "main": "dist/to-redux-type.js",
   "author": "Braden R. Napier",
@@ -10,6 +10,13 @@
     "prepublish": "npm run build:prod",
     "build:prod": "cross-env NODE_ENV=production BABEL_ENV=production babel-node config/scripts/build",
     "build": "babel-node config/scripts/build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Dash-OS/to-redux-type.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Dash-OS/to-redux-type/issues"
   },
   "keywords": [
     "react",
