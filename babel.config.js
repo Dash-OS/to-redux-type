@@ -1,6 +1,7 @@
 module.exports = function getBabelConfiguration(api) {
   api.cache(true);
   return {
+    comments: false,
     presets: [
       [
         '@babel/preset-env',
