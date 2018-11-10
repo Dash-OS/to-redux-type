@@ -1,8 +1,9 @@
 // Allow for wildcard in the types
-const isReduxType = str => /^[A-Z0-9\*]+([_\*][A-Z0-9\*]+)*?$/.test(str)
 
-const isPlainObject =
-  o => ( o !== null && ! Array.isArray(o) && typeof o !== 'function' && typeof o === 'object' )
+const SSC_RE = /^[A-Z0-9*]+([_*][A-Z0-9*]+)*?$/;
+const SPLIT_RE = /([A-Z]+|[a-z]+|[0-9]+)/;
+
+const isReduxType = str => SSC_RE.test(str);
 
 /*
   Give a best effort to make the type formatting as reliable as possible.
@@ -22,71 +23,73 @@ const isPlainObject =
   systemRx -> 'SYSTEM_RX'
   systemRX -> 'SYSTEM_RX'
 */
-function formatType (type) {
-  if ( isReduxType(type) ) { return type }
-  let buffer = '',
-      list = type
-              .split(/([A-Z]+|[a-z]+|[0-9]+)/)
-              .reduce(
-                (a, c) => {
-                  if ( c === '' ) { return a }
-                  a.push(c)
-                  return a
-                }, []
-              )
-  if ( list.length === 1 ) { return type.toUpperCase() }
-  let wasCapital = false, wasWildcard = false
-  for ( let e of list ) {
-    if ( ! e.length  ) { continue }
-    const isCapital = /[A-Z]/.test(e)
-    const isWildcard = e.includes('*')
-    e = e.toUpperCase()
-    if ( isReduxType(e) ) {
-      if ( buffer === '' || isWildcard || wasWildcard ) {
-        buffer += e
-      } else {
-        if ( isCapital && ! wasCapital ) {
-          buffer += '_' + e
-        } else if ( wasCapital && isCapital ) {
-          buffer += e
-        } else if ( wasCapital && ! isCapital ) {
-          if ( buffer.slice(-2, -1) === '_' || buffer.slice(-2, -1) === '' ) {
-            buffer += e
-          } else { buffer = buffer.slice(0, -1) + '_' + buffer.slice(-1) + e }
-        } else if ( wasCapital && ! isCapital ) {
-          if ( buffer.slice(-2, -1) === '_' || buffer.slice(-2, -1) === '' ) {
-            buffer += e
-          } else { buffer += '_' + e }
-        } else { buffer += '_' + e }
-      }
-    } else if ( isWildcard ) { buffer += e } else {
-      console.log('None: ', e)
-    }
-    wasCapital = isCapital ; wasWildcard = isWildcard
+function formatType(type) {
+  if (isReduxType(type)) {
+    return type;
   }
-  if ( isReduxType(buffer) ) { return buffer }
+  const list = type.split(SPLIT_RE).filter(Boolean);
+  if (list.length === 1) {
+    return type.toUpperCase();
+  }
+  let wasCapital = false;
+  let wasWildcard = false;
+  return list.reduce((buffer, e) => {
+    const isCapital = /[A-Z]/.test(e);
+    const isWildcard = e === '*';
+    e = e.toUpperCase();
+    if (isReduxType(e)) {
+      if (buffer === '' || isWildcard || wasWildcard) {
+        buffer += e;
+      } else if (isCapital && !wasCapital) {
+        buffer += `_${e}`;
+      } else if (wasCapital && isCapital) {
+        buffer += e;
+      } else if (wasCapital && !isCapital) {
+        if (buffer.slice(-2, -1) === '_' || buffer.slice(-2, -1) === '') {
+          buffer += e;
+        } else {
+          buffer = `${buffer.slice(0, -1)}_${buffer.slice(-1)}${e}`;
+        }
+      } else if (wasCapital && !isCapital) {
+        if (buffer.slice(-2, -1) === '_' || buffer.slice(-2, -1) === '') {
+          buffer += e;
+        } else {
+          buffer += `_${e}`;
+        }
+      } else {
+        buffer += `_${e}`;
+      }
+    } else if (isWildcard) {
+      buffer += e;
+    } else {
+      buffer += e;
+    }
+    wasCapital = isCapital;
+    wasWildcard = isWildcard;
+    return buffer;
+  }, '');
 }
 
 const formatValue = value => {
-  if ( typeof value === 'string' ) {
-    return formatType(value)
-  } else if ( Array.isArray(value) ) {
-    return value.map(e => e.startsWith('@')
-      ? e.slice(1)
-      : formatValue(e)
-    )
-  } else if ( typeof value === 'object' ) {
+  if (typeof value === 'string') {
+    return value.startsWith('@') ? value.slice(1) : formatType(value);
+  }
+  if (Array.isArray(value)) {
+    return value.map(e => (e.startsWith('@') ? e.slice(1) : formatValue(e)));
+  }
+  if (typeof value === 'object') {
     return Object.keys(value).reduce((p, c) => {
-      if ( typeof c === 'string' ) {
-        if ( c.startsWith('@') ) {
-          p[c.slice(1)] = value[c]
+      if (typeof c === 'string') {
+        if (c.startsWith('@')) {
+          p[c.slice(1)] = value[c];
         } else {
-          p[formatType(c)] = value[c]
+          p[formatType(c)] = value[c];
         }
       }
-      return p
-    }, {}) 
+      return p;
+    }, {});
   }
-}
+  return value;
+};
 
-export default formatValue
+export default formatValue;
